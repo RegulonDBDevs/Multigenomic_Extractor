@@ -1,0 +1,27 @@
+[project]
+name = "multigenomic-extractor"
+version = "0.1.0"
+description = "Extract multigenomic source files into collection JSON files using a hexagonal architecture."
+requires-python = ">=3.10"
+dependencies = [
+    "biopython>=1.83"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0"
+]
+
+[project.scripts]
+multigenomic-extractor = "multigenomic_extractor.infrastructure.cli.main:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
