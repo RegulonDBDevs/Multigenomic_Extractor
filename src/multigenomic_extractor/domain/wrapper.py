@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from multigenomic_extractor.domain.constants import COLLECTION_MAPPING
 
@@ -16,7 +16,7 @@ def build_collection_wrapper(
     class_acronym: str,
     organism_name: str,
     strain_name: str,
-    documents: List[Dict[str, Any]],
+    documents: list[dict[str, Any]],
 ):
     return {
         "classAcronym": class_acronym,

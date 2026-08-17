@@ -15,26 +15,26 @@ PRODUCT_TYPE_BY_FEATURE_TYPE = {
 COLLECTION_MAPPING = {
     "source": {
         "collectionName": "organisms",
-        "subClassAcronym": "ORG",
+        "subClassAcronym": "OR",
     },
     "gene": {
         "collectionName": "genes",
-        "subClassAcronym": "GNC",
+        "subClassAcronym": "GN",
     },
     "CDS": {
         "collectionName": "products",
-        "subClassAcronym": "PDC",
+        "subClassAcronym": "PD",
     },
     "rRNA": {
         "collectionName": "products",
-        "subClassAcronym": "PDC",
+        "subClassAcronym": "PD",
     },
     "tRNA": {
         "collectionName": "products",
-        "subClassAcronym": "PDC",
+        "subClassAcronym": "PD",
     },
     "tmRNA": {
         "collectionName": "products",
-        "subClassAcronym": "PDC",
+        "subClassAcronym": "PD",
     },
 }

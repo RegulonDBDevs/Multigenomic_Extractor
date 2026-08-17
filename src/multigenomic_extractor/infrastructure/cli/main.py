@@ -1,8 +1,14 @@
 import argparse
 
-from multigenomic_extractor.application.use_cases import ExtractMultigenomicDirectoryUseCase
-from multigenomic_extractor.infrastructure.adapters.biopython_genbank_reader import BiopythonGenBankReader
-from multigenomic_extractor.infrastructure.adapters.json_collection_writer import JsonCollectionWriter
+from multigenomic_extractor.application.use_cases import (
+    ExtractMultigenomicDirectoryUseCase,
+)
+from multigenomic_extractor.infrastructure.adapters.biopython_genbank_reader import (
+    BiopythonGenBankReader,
+)
+from multigenomic_extractor.infrastructure.adapters.json_collection_writer import (
+    JsonCollectionWriter,
+)
 from multigenomic_extractor.infrastructure.adapters.progress_bar import ProgressBar
 
 

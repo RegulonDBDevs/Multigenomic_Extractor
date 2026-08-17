@@ -1,4 +1,4 @@
-from typing import Callable, Dict
+from collections.abc import Callable
 
 from multigenomic_extractor.domain.constants import PRODUCT_TYPE_BY_FEATURE_TYPE
 from multigenomic_extractor.domain.feature_context import build_feature_context
@@ -14,7 +14,7 @@ from multigenomic_extractor.domain.helpers import (
     set_gene_type,
 )
 
-FEATURE_BUILDERS: Dict[str, Callable] = {}
+FEATURE_BUILDERS: dict[str, Callable] = {}
 
 
 def register_feature_builder(feature_type: str):
