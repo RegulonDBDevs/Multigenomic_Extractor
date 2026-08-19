@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from pathlib import Path
 
 from multigenomic_extractor.domain.constants import PRODUCT_TYPE_BY_FEATURE_TYPE
 from multigenomic_extractor.domain.feature_context import build_feature_context
@@ -89,18 +90,35 @@ def build_source_document(ctx):
     qualifiers = ctx["qualifiers"]
 
     organism_id = ctx.get("organism_id")
+    source_file = ctx.get("source_file")
+
+    db_cross_reference = list(
+        qualifiers.get("db_xref", [])
+    )
+
+    if source_file:
+        source_file_id = Path(source_file).stem
+
+        if source_file_id not in db_cross_reference:
+            db_cross_reference.append(
+                source_file_id
+            )
 
     return {
         "_id": organism_id,
-        "sourceFile": ctx.get("source_file"),
+        "sourceFile": source_file,
         "name": build_org_name(
             (
-                safe_get_first(qualifiers.get("organism"))
-                or record.annotations.get("organism")
+                safe_get_first(
+                    qualifiers.get("organism")
+                )
+                or record.annotations.get(
+                    "organism"
+                )
             ),
             safe_get_first(
                 qualifiers.get("strain")
-            )
+            ),
         ),
         "description": joined_description(
             qualifiers,
@@ -122,17 +140,19 @@ def build_source_document(ctx):
                 "sub_species",
             ],
         ),
-        "dbCrossReference": qualifiers.get("db_xref"),
+        "dbCrossReference": db_cross_reference,
         "pgdbName": join_clean_values(
             qualifiers.get("plasmid"),
-            ctx.get("source_file"),
+            source_file,
         ),
         "plasmidName": safe_get_first(
             qualifiers.get("plasmid")
         ),
         "type": (
             "plasmid"
-            if safe_get_first(qualifiers.get("plasmid")) is not None
+            if safe_get_first(
+                qualifiers.get("plasmid")
+            ) is not None
             else "chromosome"
         ),
         "genomeVersion": record.id,
@@ -200,7 +220,9 @@ def build_product_synonyms(qualifiers):
         "protein_id",
     ]:
         for value in qualifiers.get(key, []):
-            synonyms.append(f"{key}:{value}")
+            synonyms.append(
+                f"{key}:{value}"
+            )
 
     return synonyms
 
@@ -220,10 +242,14 @@ def build_product_id(ctx):
     qualifiers = ctx["qualifiers"]
 
     return (
-        safe_get_first(qualifiers.get("protein_id"))
+        safe_get_first(
+            qualifiers.get("protein_id")
+        )
         or (
             f"product_{safe_get_first(qualifiers.get('locus_tag'))}"
-            if safe_get_first(qualifiers.get("locus_tag"))
+            if safe_get_first(
+                qualifiers.get("locus_tag")
+            )
             else None
         )
         or build_default_id(ctx)
@@ -234,9 +260,15 @@ def build_product_name(ctx):
     qualifiers = ctx["qualifiers"]
 
     return (
-        safe_get_first(qualifiers.get("product"))
-        or safe_get_first(qualifiers.get("gene"))
-        or safe_get_first(qualifiers.get("locus_tag"))
+        safe_get_first(
+            qualifiers.get("product")
+        )
+        or safe_get_first(
+            qualifiers.get("gene")
+        )
+        or safe_get_first(
+            qualifiers.get("locus_tag")
+        )
         or build_product_id(ctx)
     )
 
@@ -252,8 +284,10 @@ def build_product_document(ctx):
         qualifiers.get("locus_tag")
     )
 
-    product_type = PRODUCT_TYPE_BY_FEATURE_TYPE.get(
-        ctx["feature_type"]
+    product_type = (
+        PRODUCT_TYPE_BY_FEATURE_TYPE.get(
+            ctx["feature_type"]
+        )
     )
 
     return {
@@ -277,7 +311,9 @@ def build_product_document(ctx):
 
 
 for feature_type in PRODUCT_TYPE_BY_FEATURE_TYPE:
-    register_feature_builder(feature_type)(
+    register_feature_builder(
+        feature_type
+    )(
         build_product_document
     )
 
