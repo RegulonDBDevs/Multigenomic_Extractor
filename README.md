@@ -35,7 +35,13 @@ MultigenomicExtractor/
 
 ```bash
 pip install biopython
-py main.py --input ../download_genome/genomes/genbank --output ./output/json/
+python main.py \
+    --input ../download_genome/genomes/genbank/ \
+    --output ./output/json/ \
+    --mongo-url "mongodb://localhost:27017" \
+    --identifiers-db Multigenomic_TESTING \
+    --rdb-version "14.4.0" \
+    --source-name "GenBank"
 ```
 
 ## Optional installation

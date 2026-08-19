@@ -286,7 +286,7 @@ def normalize_feature(
     record,
     feature,
     source_file: str,
-    organism_id: str = None,
+    organism_id: str | None = None,
 ):
     ctx = build_feature_context(
         record=record,

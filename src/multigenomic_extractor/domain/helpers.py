@@ -211,3 +211,4 @@ def build_org_name(org_name, strain):
     )
 
     return re.sub(r"\s+", " ", org_name).strip()
+
