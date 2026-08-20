@@ -1,0 +1,226 @@
+{
+  "genes": {
+    "validator": {
+      "$jsonSchema": {
+        "type": "object",
+        "required": [
+          "_id",
+          "organisms_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+          },
+          "additiveEvidences": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "bnumber": {
+            "type": "string"
+          },
+          "centisomePosition": {
+            "type": "number"
+          },
+          "citations": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "anyOf": [
+                {
+                  "required": [
+                    "publications_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "evidences_id"
+                  ]
+                }
+              ],
+              "properties": {
+                "publications_id": {
+                  "type": "string",
+                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                },
+                "evidences_id": {
+                  "type": "string",
+                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "confidenceLevel": {
+            "type": "string"
+          },
+          "externalCrossReferences": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": [
+                "externalCrossReferences_id",
+                "objectId"
+              ],
+              "properties": {
+                "externalCrossReferences_id": {
+                  "type": "string",
+                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                },
+                "objectId": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "fragments": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": [
+                "strand",
+                "leftEndPosition",
+                "rightEndPosition"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "strand": {
+                  "type": "string",
+                  "enum": [
+                    "forward",
+                    "reverse"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "leftEndPosition": {
+                  "type": "number",
+                  "multipleOf": 1.0
+                },
+                "rightEndPosition": {
+                  "type": "number",
+                  "multipleOf": 1.0
+                },
+                "sequence": {
+                  "type": "string",
+                  "pattern": "^[ATCGatcg]+$"
+                },
+                "centisomePosition": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "gcContent": {
+            "type": "number"
+          },
+          "internalComment": {
+            "type": "string"
+          },
+          "interrupted": {
+            "type": "boolean"
+          },
+          "leftEndPosition": {
+            "type": "number",
+            "multipleOf": 1.0
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "organisms_id": {
+            "type": "string",
+            "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+          },
+          "rightEndPosition": {
+            "type": "number",
+            "multipleOf": 1.0
+          },
+          "sequence": {
+            "type": "string",
+            "pattern": "^[ACGTRYSWKMBDHVNacgtryswkmbdhvn]+$"
+          },
+          "strand": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "reverse"
+            ]
+          },
+          "synonyms": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "terms": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "properties": {
+                "terms_id": {
+                  "type": "string",
+                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                },
+                "terms_name": {
+                  "type": "string"
+                },
+                "termLabel": {
+                  "type": "string"
+                },
+                "parents": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "terms_id": {
+                        "type": "string",
+                        "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                      },
+                      "terms_name": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "pseudo",
+              "phantom",
+              "gene",
+              "truncated"
+            ]
+          },
+          "schemaVersion": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "validationLevel": "strict",
+    "validationAction": "error"
+  }
+}

@@ -1,0 +1,82 @@
+{
+	"organisms": {
+		"validator": {
+			"$jsonSchema": {
+				"type": "object",
+				"required": [
+					"_id",
+					"name"
+				],
+				"properties": {
+					"_id": {
+						"type": "string",
+						"pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+					},
+					"description": {
+						"type": "string"
+					},
+					"internalComment": {
+						"type": "string"
+					},
+					"genomeSize": {
+						"type": "number"
+					},
+					"genomeVersion": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"pgdbAuthors": {
+						"type": "array",
+						"uniqueItems": false,
+						"items": {
+						  "type": "string"
+						}
+				  	},
+					"dbCrossReference": {
+						"type": "array",
+						"uniqueItems": false,
+						"items": {
+						  "type": "string"
+						}
+				  	},
+					"pgdbCopyright": {
+						"type": "string"
+					},
+					"pgdbName": {
+						"type": "string"
+					},
+					"sourceFile": {
+						"type": "string"
+					},
+					"strainName": {
+						"type": "string"
+					},
+					"synonyms": {
+						"type": "array",
+						"uniqueItems": true,
+						"items": {
+						  "type": "string"
+						}
+				  	},
+					"url": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"plasmidName": {
+						"type": "string"
+					},
+					"schemaVersion": {
+						"type": "number"
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"validationLevel": "strict",
+		"validationAction": "error"
+	}
+}
