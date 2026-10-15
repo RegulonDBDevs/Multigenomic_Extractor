@@ -289,7 +289,8 @@ class IdentifierService:
                 self.regulondb_release
             ),
             "regulondbDatabase": (
-                "Multigenomic_TESTING"
+                "regulondbidentifiers"
+                # "Multigenomic_TESTING"
             ),
             "lastRegulonDBReleaseUsed": (
                 self.regulondb_release

@@ -10,7 +10,7 @@
         "properties": {
           "_id": {
             "type": "string",
-            "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+            "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
           },
           "additiveEvidences": {
             "type": "array",
@@ -45,11 +45,11 @@
               "properties": {
                 "publications_id": {
                   "type": "string",
-                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                  "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
                 },
                 "evidences_id": {
                   "type": "string",
-                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                  "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
                 }
               },
               "additionalProperties": false
@@ -70,7 +70,7 @@
               "properties": {
                 "externalCrossReferences_id": {
                   "type": "string",
-                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                  "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
                 },
                 "objectId": {
                   "type": "string"
@@ -113,7 +113,7 @@
                 },
                 "sequence": {
                   "type": "string",
-                  "pattern": "^[ATCGatcg]+$"
+                  "pattern": "^[ACGTRYSWKMBDHVNacgtryswkmbdhvn]+$"
                 },
                 "centisomePosition": {
                   "type": "number"
@@ -143,7 +143,7 @@
           },
           "organisms_id": {
             "type": "string",
-            "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+            "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
           },
           "rightEndPosition": {
             "type": "number",
@@ -175,7 +175,7 @@
               "properties": {
                 "terms_id": {
                   "type": "string",
-                  "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                  "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
                 },
                 "terms_name": {
                   "type": "string"
@@ -191,7 +191,7 @@
                     "properties": {
                       "terms_id": {
                         "type": "string",
-                        "pattern": "^RDBMG[A-Z]{7}[0-9]{7}$"
+                        "pattern": "^RDB(?:MG[A-Z]{7}[0-9]{7}|[A-Z]{8}[0-9]{5})$"
                       },
                       "terms_name": {
                         "type": "string"

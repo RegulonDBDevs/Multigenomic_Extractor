@@ -83,6 +83,32 @@ def build_generic_feature(ctx):
         },
     }
 
+def get_taxon_id(qualifiers) -> str | None:
+    for db_xref in qualifiers.get(
+        "db_xref",
+        [],
+    ):
+        prefix, separator, value = (
+            db_xref.partition(":")
+        )
+
+        if (
+            separator
+            and prefix.lower() == "taxon"
+            and value
+        ):
+            return value
+
+    return None
+
+def get_record_accession(record) -> str | None:
+    accessions = record.annotations.get(
+        "accessions",
+        [],
+    )
+
+    return safe_get_first(accessions)
+
 
 @register_feature_builder("source")
 def build_source_document(ctx):
@@ -106,6 +132,8 @@ def build_source_document(ctx):
 
     return {
         "_id": organism_id,
+        "accession": get_record_accession(record),
+        "accessionVersion": record.id,
         "sourceFile": source_file,
         "name": build_org_name(
             (
@@ -148,6 +176,10 @@ def build_source_document(ctx):
         "plasmidName": safe_get_first(
             qualifiers.get("plasmid")
         ),
+        "taxonId": get_taxon_id(qualifiers),
+        "taxonName": safe_get_first(
+                            qualifiers.get("organism")
+                        ),
         "type": (
             "plasmid"
             if safe_get_first(
@@ -172,6 +204,12 @@ def build_gene_document(ctx):
     locus_tag = safe_get_first(
         qualifiers.get("locus_tag")
     )
+    
+    display_name = (
+        gene_name
+        or locus_tag
+        or build_default_id(ctx)
+    )
 
     synonyms = []
 
@@ -188,7 +226,7 @@ def build_gene_document(ctx):
             or gene_name
             or build_default_id(ctx)
         ),
-        "name": gene_name,
+        "name": display_name,
         "bnumber": locus_tag,
         "leftEndPosition": ctx["start"],
         "rightEndPosition": ctx["end"],
@@ -209,7 +247,6 @@ def build_gene_document(ctx):
         "type": set_gene_type(qualifiers),
         "organisms_id": ctx.get("organism_id"),
     }
-
 
 def build_product_synonyms(qualifiers):
     synonyms = []

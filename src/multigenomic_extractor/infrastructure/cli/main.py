@@ -57,6 +57,7 @@ def build_parser():
     parser.add_argument(
         "--identifiers-db",
         default="regulondbidentifiers",
+        # default="Multigenomic_TESTING",
         help=(
             "MongoDB database containing "
             "identifiers and sequences."

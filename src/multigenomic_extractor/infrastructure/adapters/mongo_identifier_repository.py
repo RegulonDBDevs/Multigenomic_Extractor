@@ -7,7 +7,8 @@ class MongoIdentifierRepository:
     def __init__(
         self,
         database,
-        target_database_name: str = "Multigenomic_TESTING",
+        target_database_name: str = "regulondbidentifiers",
+        # target_database_name: str = "Multigenomic_TESTING",
     ):
         self.identifiers = database["identifiers"]
         self.sequences = database["sequences"]

@@ -11,7 +11,6 @@ from pymongo.errors import (
     OperationFailure,
 )
 
-
 DEFAULT_INPUT_DIRECTORY = "./output/json"
 DEFAULT_SCHEMA_DIRECTORY = (
     "./src/multigenomic_extractor/domain/schemas"

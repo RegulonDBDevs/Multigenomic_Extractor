@@ -224,3 +224,5 @@ __marimo__/
 *.tsv
 *.csv
 .commiter
+output/
+*.DS_Store
