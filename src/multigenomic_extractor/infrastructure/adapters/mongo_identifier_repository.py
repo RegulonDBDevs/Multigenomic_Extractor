@@ -7,12 +7,15 @@ class MongoIdentifierRepository:
     def __init__(
         self,
         database,
-        target_database_name: str = "regulondbidentifiers",
-        # target_database_name: str = "Multigenomic_TESTING",
+        target_database_name: str | None = None,
     ):
         self.identifiers = database["identifiers"]
         self.sequences = database["sequences"]
-        self.target_database_name = target_database_name
+        self.target_database_name = (
+            target_database_name
+            if target_database_name is not None
+            else database.name
+        )
 
     def find_identifier(
         self,
@@ -35,14 +38,8 @@ class MongoIdentifierRepository:
     ) -> list[dict[str, Any]]:
         return list(
             self.identifiers.find(
-                {
-                    "organism": organism,
-                    "type": collection_name,
-                },
-                {
-                    "_id": 1,
-                    "propertiesToMakeId": 1,
-                },
+                {"organism": organism, "type": collection_name},
+                {"_id": 1, "propertiesToMakeId": 1},
             )
         )
 
@@ -60,17 +57,12 @@ class MongoIdentifierRepository:
                 "subClassAcronym": collection_acronym,
             },
             {
-                "$inc": {
-                    "value": 1,
-                },
-                "$setOnInsert": {
-                    "classAcronym": organism_acronym,
-                },
+                "$inc": {"value": 1},
+                "$setOnInsert": {"classAcronym": organism_acronym},
             },
             upsert=True,
             return_document=ReturnDocument.AFTER,
         )
-
         return sequence_document["value"]
 
     def reserve_sequences(
@@ -82,7 +74,6 @@ class MongoIdentifierRepository:
     ) -> range:
         if amount <= 0:
             return range(0)
-
         sequence_document = self.sequences.find_one_and_update(
             {
                 "database": self.target_database_name,
@@ -91,41 +82,20 @@ class MongoIdentifierRepository:
                 "subClassAcronym": collection_acronym,
             },
             {
-                "$inc": {
-                    "value": amount,
-                },
-                "$setOnInsert": {
-                    "classAcronym": organism_acronym,
-                },
+                "$inc": {"value": amount},
+                "$setOnInsert": {"classAcronym": organism_acronym},
             },
             upsert=True,
             return_document=ReturnDocument.AFTER,
         )
-
         last_value = sequence_document["value"]
         first_value = last_value - amount + 1
+        return range(first_value, last_value + 1)
 
-        return range(
-            first_value,
-            last_value + 1,
-        )
+    def save_identifier(self, identifier_document: dict) -> None:
+        self.identifiers.insert_one(identifier_document)
 
-    def save_identifier(
-        self,
-        identifier_document: dict,
-    ) -> None:
-        self.identifiers.insert_one(
-            identifier_document
-        )
-
-    def save_identifiers(
-        self,
-        identifier_documents: list[dict],
-    ) -> None:
+    def save_identifiers(self, identifier_documents: list[dict]) -> None:
         if not identifier_documents:
             return
-
-        self.identifiers.insert_many(
-            identifier_documents,
-            ordered=False,
-        )
+        self.identifiers.insert_many(identifier_documents, ordered=False)

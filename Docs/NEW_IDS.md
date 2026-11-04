@@ -12,18 +12,10 @@ REGEX para IDs: **"^RDB[A-Z]{8}[0-9]{7}$"**
 
 | **Organismo**       | **Organism** | **Collection** | **Ejemplo de ID**    |
 | ------------------- | ------------ | -------------- | -------------------- |
-| *Escherichia coli*  | `SCOLI`     | `ORG`     | **RDBMGECOORG0000001** |
+| *Escherichia coli*  | `ECOLI`    | `ORG`     | **RDBMGECOORG0000001** |
 | *Shigella boydii*   | `SBOYD`      | `ORG`          | **RDBSBOYDOR0000001** |
 | *Shigella flexneri* | `SFLEX`      | `ORG`          | **RDBSFLEXOR0000001** |
 | *Shigella sonnei*   | `SSONN`      | `ORG`          | **RDBSSONNOR0000001** |
-
-
-
-[x] Limpiar nombres de org. 
-
-[ ] Verificar la manera en que se usa el metadata de los json para generar IDs
-
-[ ] Listar cuantos IDs se estan generando
 
 Genes
 ACRONYM    FILES      COLLECTION_DATA

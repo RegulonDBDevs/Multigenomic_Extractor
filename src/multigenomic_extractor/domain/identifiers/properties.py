@@ -1,11 +1,15 @@
 from .gene import gene
 from .organism import organism
 from .product import product
+from .operon import operon
+from .transcription_unit import transcription_unit
 
 PROPERTY_BUILDERS = {
     "organisms": organism,
     "genes": gene,
     "products": product,
+    "operons": operon,
+    "transcriptionUnits": transcription_unit,
 }
 
 

@@ -1,5 +1,7 @@
 import argparse
 import json
+import sqlite3
+import tempfile
 import sys
 from pathlib import Path
 from typing import Any
@@ -21,6 +23,8 @@ COLLECTION_ORDER = [
     "organisms",
     "genes",
     "products",
+    "operons",
+    "transcriptionUnits",
 ]
 
 SUPPORTED_COLLECTIONS = set(
@@ -559,61 +563,99 @@ def insert_documents(
     source_file: Path,
     progress: ProgressBar,
 ) -> int:
+    """Idempotent upload: skip identical existing docs; reject conflicting ones."""
     if not documents:
         return 0
 
-    collection = database[
-        collection_name
-    ]
-
+    collection = database[collection_name]
     inserted_count = 0
 
-    for batch_number, batch in enumerate(
-        iter_batches(
-            documents,
-            batch_size,
-        ),
-        start=1,
-    ):
-        try:
-            result = collection.insert_many(
-                batch,
-                ordered=False,
-            )
+    for batch_number, batch in enumerate(iter_batches(documents, batch_size), start=1):
+        ids = [document["_id"] for document in batch]
+        existing = {
+            document["_id"]: document
+            for document in collection.find({"_id": {"$in": ids}})
+        }
+        to_insert = []
+        skipped = 0
 
-        except BulkWriteError as error:
-            progress.clear()
+        for document in batch:
+            stored = existing.get(document["_id"])
+            if stored is None:
+                to_insert.append(document)
+            elif stored == document:
+                skipped += 1
+            else:
+                raise ValueError(
+                    f"Conflicting existing document: collection={collection_name}, "
+                    f"_id={document['_id']}, file={source_file.name}, "
+                    f"batch={batch_number}. Existing MongoDB data was NOT overwritten."
+                )
 
-            print_bulk_write_error(
-                error=error,
-                source_file=source_file,
-                collection_name=(
-                    collection_name
-                ),
-                batch_number=(
-                    batch_number
-                ),
-            )
-
-            raise
-
-        inserted = len(
-            result.inserted_ids
-        )
-
-        inserted_count += inserted
+        if to_insert:
+            try:
+                result = collection.insert_many(to_insert, ordered=False)
+                inserted_count += len(result.inserted_ids)
+            except BulkWriteError as error:
+                # Unordered bulk writes may have partially succeeded. Never
+                # blindly retry here: the next run reconciles inserted docs.
+                progress.clear()
+                print_bulk_write_error(
+                    error=error,
+                    source_file=source_file,
+                    collection_name=collection_name,
+                    batch_number=batch_number,
+                )
+                raise
 
         progress.update(
-            inserted,
-            collection_name=(
-                collection_name
-            ),
-            source_file=(
-                source_file.name
-            ),
+            len(batch),
+            collection_name=collection_name,
+            source_file=source_file.name,
         )
 
     return inserted_count
+
+
+def preflight_unique_ids(grouped_files: dict[str, list[Path]]) -> int:
+    """Check all JSON IDs before any MongoDB writes, using disk-backed SQLite."""
+    total = 0
+    with tempfile.TemporaryDirectory(prefix="multigenomic_preflight_") as tmp:
+        with sqlite3.connect(str(Path(tmp) / "ids.sqlite")) as conn:
+            conn.execute(
+                "CREATE TABLE seen (collection TEXT NOT NULL, id TEXT NOT NULL, "
+                "source TEXT NOT NULL, PRIMARY KEY (collection, id)) WITHOUT ROWID"
+            )
+            for collection_name in COLLECTION_ORDER:
+                for source_file in grouped_files[collection_name]:
+                    wrapper = load_json(source_file)
+                    docs = get_wrapper_documents(wrapper, source_file)
+                    if get_wrapper_collection_name(wrapper, source_file) != collection_name:
+                        raise ValueError(f"Collection mismatch in {source_file}")
+                    for index, document in enumerate(docs):
+                        doc_id = document.get("_id")
+                        if not isinstance(doc_id, str) or not doc_id:
+                            raise ValueError(
+                                f"Missing/invalid _id: {source_file.name}, document {index}"
+                            )
+                        try:
+                            conn.execute(
+                                "INSERT INTO seen(collection, id, source) VALUES (?, ?, ?)",
+                                (collection_name, doc_id, f"{source_file.name}[{index}]"),
+                            )
+                        except sqlite3.IntegrityError as error:
+                            previous = conn.execute(
+                                "SELECT source FROM seen WHERE collection=? AND id=?",
+                                (collection_name, doc_id),
+                            ).fetchone()[0]
+                            raise ValueError(
+                                f"Duplicate JSON _id before upload: "
+                                f"collection={collection_name}, _id={doc_id}, "
+                                f"first={previous}, second={source_file.name}[{index}]"
+                            ) from error
+                        total += 1
+                    conn.commit()
+    return total
 
 
 def upload_collection_files(
@@ -761,11 +803,9 @@ def main() -> None:
         input_files
     )
 
-    total_documents_to_upload = (
-        count_total_documents(
-            grouped_files
-        )
-    )
+    print("Validating JSON IDs before connecting to MongoDB...", flush=True)
+    total_documents_to_upload = preflight_unique_ids(grouped_files)
+    print(f"Preflight OK: {total_documents_to_upload} unique documents.", flush=True)
 
     mongo_client = MongoClient(
         args.mongo_url
@@ -831,6 +871,7 @@ def main() -> None:
             raise
 
         progress.finish()
+        print("Note: progress counts processed documents; total below counts newly inserted documents.")
 
         print(
             f"Upload completed | "

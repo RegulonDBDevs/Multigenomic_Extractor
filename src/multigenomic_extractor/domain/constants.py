@@ -66,3 +66,10 @@ def get_organism_acronym(
         "No organism acronym configured for "
         f"{organism_name!r}"
     )
+# Predicted transcription collections (not GenBank feature types).
+COLLECTION_MAPPING["predicted_operon"] = {
+    "collectionName": "operons", "subClassAcronym": "OP",
+}
+COLLECTION_MAPPING["predicted_transcription_unit"] = {
+    "collectionName": "transcriptionUnits", "subClassAcronym": "TU",
+}
