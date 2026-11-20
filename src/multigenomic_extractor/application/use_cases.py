@@ -1,3 +1,4 @@
+
 from pathlib import Path
 from typing import Protocol
 
@@ -63,11 +64,13 @@ class ExtractMultigenomicDirectoryUseCase:
         writer: CollectionWriterPort,
         progress_factory,
         identifier_service=None,
+        external_reference_database_ids: dict[str, str] | None = None,
     ):
         self.reader = reader
         self.writer = writer
         self.progress_factory = progress_factory
         self.identifier_service = identifier_service
+        self.external_reference_database_ids = external_reference_database_ids
 
     def execute(
         self,
@@ -99,6 +102,7 @@ class ExtractMultigenomicDirectoryUseCase:
         self.protein_gene_warnings = {}
         self._prediction_cache = {}
         self._matched_assemblies = set()
+        self.external_reference_warnings = set()
 
         source_files = list(self.reader.find_files(input_path))
 
@@ -357,7 +361,33 @@ class ExtractMultigenomicDirectoryUseCase:
             f"Salida: "
             f"{output_path.resolve()}"
         )
+        if self.external_reference_warnings:
+            missing_databases = sorted({
+                database
+                for database, _ in self.external_reference_warnings
+            })
 
+            print(
+                "\nAdvertencia: referencias externas sin "
+                "correspondencia en MongoDB:"
+            )
+
+            for database in missing_databases:
+                count = sum(
+                    1
+                    for name, _ in self.external_reference_warnings
+                    if name == database
+                )
+
+                print(
+                    f"  {database}: {count} identificadores "
+                    "únicos sin resolver"
+                )
+
+            print(
+                "Los productos fueron conservados; "
+                "solo se omitieron las referencias faltantes."
+            )
         return {
             "documents": total_documents,
             "files": total_files,
@@ -543,7 +573,6 @@ class ExtractMultigenomicDirectoryUseCase:
             source_file=source_file.name,
             organism_id=original_organism_id,
         )
-
         if self.identifier_service:
             document["_id"] = (
                 self.identifier_service.get_or_create(
@@ -660,6 +689,10 @@ class ExtractMultigenomicDirectoryUseCase:
         }
 
         product_documents = []
+        def warn_missing_reference(database, object_id):
+            self.external_reference_warnings.add(
+                (database, object_id)
+            )
 
         for feature in record.features:
             if (
@@ -674,6 +707,10 @@ class ExtractMultigenomicDirectoryUseCase:
                     feature=feature,
                     source_file=source_file.name,
                     organism_id=organism_id,
+                    external_reference_database_ids=(
+                        self.external_reference_database_ids
+                    ),
+                    on_missing_external_reference=warn_missing_reference,
                 )
 
                 original_gene_id = document.get(

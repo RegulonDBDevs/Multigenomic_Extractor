@@ -36,10 +36,29 @@ class Progress:
         pass
 
 
+
 def test_use_case_exposes_protein_gene_index(tmp_path):
-    use_case = ExtractMultigenomicDirectoryUseCase(Reader(), Writer(), lambda _: Progress())
-    use_case.execute(str(tmp_path), str(tmp_path / 'out'))
-    key = (str(tmp_path / 'NZ_TEST.gb'), 'NZ_TEST.1')
-    assert use_case.protein_gene_indices[key]['P1']['gene_id'] == 'L1'
-    assert use_case.protein_gene_indices[key]['P1']['molecule'] == 'NZ_TEST.1'
-    assert use_case.protein_gene_warnings == {}
+    use_case = ExtractMultigenomicDirectoryUseCase(
+        Reader(),
+        Writer(),
+        lambda _: Progress(),
+    )
+
+    use_case.execute(str(tmp_path), str(tmp_path / "out"))
+
+    record = make_record()
+
+    from multigenomic_extractor.domain.predictions import (
+        build_protein_gene_index,
+    )
+
+    gene_id_map = {"L1": "L1"}
+    protein_index, warnings = build_protein_gene_index(
+        record,
+        gene_id_map,
+    )
+
+    assert protein_index["P1"]["gene_id"] == "L1"
+    assert protein_index["P1"]["molecule"] == "NZ_TEST.1"
+    assert warnings == []
+

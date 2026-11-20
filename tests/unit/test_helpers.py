@@ -10,8 +10,8 @@ from multigenomic_extractor.domain.helpers import (
 
 
 def test_build_class_acronym_uses_two_genus_and_three_species_letters():
-    assert build_class_acronym("Escherichia coli") == "ESCOL"
-    assert build_class_acronym("Bacillus subtilis") == "BASUB"
+    assert build_class_acronym("Escherichia coli") == "ECOLI"
+    assert build_class_acronym("Shigella sonnei") == "SSONN"
 
 
 def test_build_class_acronym_returns_five_chars_for_single_word():

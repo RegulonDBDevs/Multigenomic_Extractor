@@ -14,6 +14,15 @@ class Writer:
     def write_collection(self, **kwargs):
         self.writes.append(kwargs)
 
+class Progress:
+    def __init__(self):
+        self.total = 0
+
+    def update(self, step=1):
+        pass
+
+    def finish(self):
+        pass
 
 class Identifiers:
     def __init__(self):
@@ -23,13 +32,43 @@ class Identifiers:
         self.calls.append((document.copy(), collection_name, organism_name))
         acronym = "OP" if collection_name == "operons" else "TU"
         return f"RDBMGECOLI{acronym}{len(self.calls):07d}"
+    
+    def get_or_create_many(
+        self,
+        *,
+        documents,
+        collection_name,
+        organism_name,
+    ):
+        if not hasattr(self, "calls"):
+            self.calls = []
+
+        self.calls.append(
+            (documents, collection_name, organism_name)
+        )
+
+        prefix = {
+            "operons": "OP",
+            "transcriptionUnits": "TU",
+        }[collection_name]
+
+        return [
+            f"RDBMGECOLI{prefix}{index:07d}"
+            for index, _ in enumerate(documents, start=1)
+        ]
+
 
 
 def test_exports_valid_pair_and_skips_unresolved(tmp_path):
     pred = tmp_path / "GCA_013146725.pred"
     pred.write_text("F\tP1\tgeneA\nF\tMISSING\tunknown\n", encoding="utf-8")
     writer, identifiers = Writer(), Identifiers()
-    uc = ExtractMultigenomicDirectoryUseCase(None, writer, None, identifiers)
+    uc = ExtractMultigenomicDirectoryUseCase(
+        None,
+        writer,
+        lambda total: Progress(),
+        identifiers,
+    )
     key = ("CP049163.gb", "CP049163.1")
     uc.assembly_gene_indices = {
         "GCA_013146725": {key: {
@@ -47,7 +86,9 @@ def test_exports_valid_pair_and_skips_unresolved(tmp_path):
     uc.prediction_warnings = []
     uc.prediction_matches = {key: {"assembly": "GCA_013146725", "path": pred}}
     count, files = uc._export_transcriptions(
-        {"GCA_013146725": pred}, tmp_path
+        {"GCA_013146725": pred},
+        tmp_path,
+        assemblies={"GCA_013146725"},
     )
     assert (count, files) == (2, 2)
     assert len(identifiers.calls) == 2

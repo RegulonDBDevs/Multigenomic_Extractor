@@ -85,9 +85,27 @@ def build_transcription_documents(
     if any(not isinstance(gene_id, str) or not _RDB_ID.fullmatch(gene_id) for gene_id in gene_ids):
         raise InvalidTranscriptionPrediction("Gene identifiers must be final RegulonDB IDs")
 
-    # The names column is informative, never used to resolve protein IDs.
-    names = [name.strip() for name in prediction.gene_names if name.strip()]
-    name = compact_gene_names(names) if len(names) == len(gene_ids) else "-".join(gene_ids)
+    # names = [name.strip() for name in prediction.gene_names if name.strip()]
+    # name = compact_gene_names(names) if len(names) == len(gene_ids) else "-".join(gene_ids)
+    # Order genes according to the operon's transcription direction.
+    is_reverse = prediction.strand == "reverse"
+
+    ordered_indices = sorted(
+        range(len(entries)),
+        key=lambda index: (
+            entries[index]["start"],
+            entries[index]["end"],
+        ),
+        reverse=is_reverse,
+    )
+
+    names = [name.strip() for name in prediction.gene_names]
+
+    if len(names) == len(gene_ids) and all(names):
+        ordered_names = [names[index] for index in ordered_indices]
+        name = compact_gene_names(ordered_names)
+    else:
+        name = "-".join(gene_ids[index] for index in ordered_indices)
 
     operon = {
         "_id": operon_id,

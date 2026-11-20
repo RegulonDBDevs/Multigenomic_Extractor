@@ -24,7 +24,7 @@ class IdentifierService:
         regulondb_release: str | None = None,
         source_db_name: str | None = None,
         source_db_version: str | None = None,
-        identifiers_db: str = "regulondbidentifiers",
+        identifiers_db: str = "regulondbidentifiers_server",
     ):
         self.repository = repository
         self.regulondb_release = regulondb_release

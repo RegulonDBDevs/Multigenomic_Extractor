@@ -1,7 +1,11 @@
+
 from collections.abc import Callable
 from pathlib import Path
 
 from multigenomic_extractor.domain.constants import PRODUCT_TYPE_BY_FEATURE_TYPE
+from multigenomic_extractor.domain.external_references import (
+    resolve_external_references,
+)
 from multigenomic_extractor.domain.feature_context import build_feature_context
 from multigenomic_extractor.domain.helpers import (
     build_org_name,
@@ -83,23 +87,20 @@ def build_generic_feature(ctx):
         },
     }
 
+
 def get_taxon_id(qualifiers) -> str | None:
-    for db_xref in qualifiers.get(
-        "db_xref",
-        [],
-    ):
-        prefix, separator, value = (
-            db_xref.partition(":")
-        )
+    for db_xref in qualifiers.get("db_xref", []):
+        prefix, separator, value = db_xref.partition(":")
 
         if (
             separator
-            and prefix.lower() == "taxon"
-            and value
+            and prefix.strip().lower() == "taxon"
+            and value.strip()
         ):
-            return value
+            return value.strip()
 
     return None
+
 
 def get_record_accession(record) -> str | None:
     accessions = record.annotations.get(
@@ -150,9 +151,7 @@ def build_source_document(ctx):
         ),
         "description": joined_description(
             qualifiers,
-            [
-                "note",
-            ],
+            ["note"],
         ),
         "strainName": safe_get_first(
             qualifiers.get("strain")
@@ -178,8 +177,8 @@ def build_source_document(ctx):
         ),
         "taxonId": get_taxon_id(qualifiers),
         "taxonName": safe_get_first(
-                            qualifiers.get("organism")
-                        ),
+            qualifiers.get("organism")
+        ),
         "type": (
             "plasmid"
             if safe_get_first(
@@ -204,7 +203,7 @@ def build_gene_document(ctx):
     locus_tag = safe_get_first(
         qualifiers.get("locus_tag")
     )
-    
+
     display_name = (
         gene_name
         or locus_tag
@@ -247,6 +246,7 @@ def build_gene_document(ctx):
         "type": set_gene_type(qualifiers),
         "organisms_id": ctx.get("organism_id"),
     }
+
 
 def build_product_synonyms(qualifiers):
     synonyms = []
@@ -327,6 +327,16 @@ def build_product_document(ctx):
         )
     )
 
+    references = []
+    database_ids = ctx.get("external_reference_database_ids")
+
+    if database_ids is not None:
+        references = resolve_external_references(
+            qualifiers,
+            database_ids,
+            on_missing=ctx.get("on_missing_external_reference"),
+        )
+
     return {
         "_id": build_product_id(ctx),
         "type": product_type,
@@ -344,6 +354,7 @@ def build_product_document(ctx):
             qualifiers
         ),
         "organisms_id": ctx.get("organism_id"),
+        "externalCrossReferences": references,
     }
 
 
@@ -360,6 +371,8 @@ def normalize_feature(
     feature,
     source_file: str,
     organism_id: str | None = None,
+    external_reference_database_ids: dict[str, str] | None = None,
+    on_missing_external_reference=None,
 ):
     ctx = build_feature_context(
         record=record,
@@ -367,6 +380,13 @@ def normalize_feature(
         source_file=source_file,
         organism_id=organism_id,
     )
+    if on_missing_external_reference is not None:
+        ctx["on_missing_external_reference"] = on_missing_external_reference
+
+    if external_reference_database_ids is not None:
+        ctx["external_reference_database_ids"] = (
+            external_reference_database_ids
+        )
 
     builder = FEATURE_BUILDERS.get(
         feature.type,

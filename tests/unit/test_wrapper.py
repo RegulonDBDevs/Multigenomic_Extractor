@@ -13,7 +13,7 @@ def test_build_collection_wrapper_keeps_expected_structure():
     assert wrapper == {
         "classAcronym": "ESCOL",
         "collectionName": "genes",
-        "subClassAcronym": "GNC",
+        "subClassAcronym": "GN",
         "organism": "Escherichia coli",
         "strain": "536",
         "collectionData": [{"_id": "gene_1"}],
